@@ -7,62 +7,93 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600&display=swap" rel="stylesheet">
 </head>
 <body>
+	
   <h1 id="boardTitle" onclick="openBoardTitlePopup()">Sprint Board</h1>
   <div><select id="parentSelect" style="display: none;"></select></div>
   
-	<div class="import-export-buttons">
-	  <button onclick="exportData()">Save</button>
-	  <label for="importFile">Open<input type="file" id="importFile" onchange="importData(event)"></label>
-	  <button onclick="toggleEditMode()" id="editToggleButton">Edit</button>
-	  <button onclick="toggleCollapseAll()" id="collapseToggleButton">Collapse</button>
-	</div>
-
-
-  <div class="board">
-    <div class="column" id="ToDo">
-	  <h2>ToDo <button onclick="addEmptyParentToColumn('ToDo')" title="Neuen Parent in ToDo anlegen">+</button></h2>
-	</div>
-    <div class="column" id="OnHold"><h2>OnHold</h2></div>
-    <div class="column" id="InProgress"><h2>InProgress</h2></div>
-    <div class="column" id="Done"><h2>Done</h2></div>
+  <div class="import-export-buttons">
+    <button onclick="exportData()">Save</button>
+    <label for="importFile">Open<input type="file" id="importFile" onchange="importData(event)"></label>
+    <button onclick="toggleEditMode()" id="editToggleButton">Edit</button>
+    <button onclick="toggleCollapseAll()" id="collapseToggleButton">Collapse</button>
   </div>
-  <div class="overlay" id="overlay"></div>
-  
-  <div class="popup" id="editPopup">
-	<h3>Task bearbeiten</h3>
-	<label>Neuer Name:</label>
-    <input type="text" id="editDesc" placeholder="Beschreibung">
-	<label>Neuer Parent:</label>
-    <select id="editParent"></select>
-	<label>Fälligkeitsdatum:</label>
-	<input type="date" id="editDueDate">
-    <button onclick="saveEdit()">Speichern</button>
-    <button onclick="closePopup()">Abbrechen</button>
-	<button onclick="deleteCurrent()" class="danger">Löschen</button>
-  </div>
-  
-  
-	<div id="editParentPopup" class="popup">
-	  <h3>Parent bearbeiten</h3>
-	  <label>Neuer Name:</label>
-	  <input type="text" id="renameParentName" />
-	  <label>Farbe:</label>
-	  <input type="color" id="renameParentColor" />
 
-		<button onclick="saveParentEdit()">Speichern</button>
-		<button onclick="closePopup()">Abbrechen</button>
-		<button onclick="deleteParent()" class="danger">Löschen</button>
+	<div class="board">
+		<div class="column" id="ToDo">
+		  <h2>ToDo <button onclick="addEmptyParentToColumn('ToDo')" title="Neuen Parent in ToDo anlegen">+</button></h2>
+		</div>
+		<div class="column" id="OnHold"><h2>OnHold</h2></div>
+		<div class="column" id="InProgress"><h2>InProgress</h2></div>
+		<div class="column" id="Done"><h2>Done</h2></div>
 	</div>
-	
-	<div id="editBoardTitlePopup" class="popup">
-	  <h3>Sprint-Board Titel bearbeiten</h3>
-	  <input type="text" id="newBoardTitle" />
-	  <div style="display: flex; gap: 10px; margin-top: 10px;">
-		<button onclick="saveBoardTitle()">Speichern</button>
-		<button onclick="closePopup()">Abbrechen</button>
-	  </div>
-	</div>
+		<!-- Parent bearbeiten -->
+		<div id="parentEditOverlay" class="popup-overlay">
+		  <div class="popup">
+			<h2>Parent bearbeiten</h2>
+			<div class="popup-body">
+			  <label>Name</label>
+			  <input type="text" id="parentEditName">
+			  <label>Farbe</label>
+			  <input type="color" id="parentEditColor">
+			</div>
+			<div class="popup-buttons">
+			  <button onclick="saveParentEdit()">Speichern</button>
+			  <button onclick="deleteParent()">Löschen</button>
+			  <button onclick="closeParentEdit()">Schließen</button>
+			</div>
+		  </div>
+		</div>
+		
+		<!-- Task bearbeiten -->
+		<div id="taskEditOverlay" class="popup-overlay">
+		  <div class="popup">
+			<h2>Task bearbeiten</h2>
+			<div class="popup-body">
+			  <label>Beschreibung</label>
+			  <input type="text" id="taskEditDesc">
+			  <label>Parent</label>
+			  <select id="taskEditParent"></select>
+			  <label>Fälligkeitsdatum</label>
+			  <input type="date" id="taskEditDueDate">
+			</div>
+			<div class="popup-buttons">
+			  <button onclick="saveTaskEdit()">Speichern</button>
+			  <button onclick="deleteCurrent()">Löschen</button>
+			  <button onclick="closeTaskEdit()">Schließen</button>
+			</div>
+		  </div>
+		</div>
+		<!-- Titel bearbeiten -->
+		<div id="titleEditOverlay" class="popup-overlay">
+		  <div class="popup">
+			<h2>Titel bearbeiten</h2>
+			<div class="popup-body">
+			  <label>Neuer Titel</label>
+			  <input type="text" id="boardTitleInput">
+			</div>
+			<div class="popup-buttons">
+			  <button onclick="saveBoardTitle()">Speichern</button>
+			  <button onclick="closeTitleEdit()">Schließen</button>
+			</div>
+		  </div>
+		</div>
+		
+		<!-- Subtask umbenennen -->
+		<div id="subtaskEditOverlay" class="popup-overlay">
+		  <div class="popup">
+			<h2>Subtask umbenennen</h2>
+			<div class="popup-body">
+			  <label>Neuer Name</label>
+			  <input type="text" id="subtaskEditInput">
+			</div>
+			<div class="popup-buttons">
+			  <button onclick="saveSubtaskEdit()">Speichern</button>
+			  <button onclick="closeSubtaskEdit()">Schließen</button>
+			</div>
+		  </div>
+		</div>
 
-  <script src="script.js"></script>
+
+  <script src="script.js" defer></script>
 </body>
 </html>
