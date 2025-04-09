@@ -542,6 +542,7 @@ function openParentEditPopup(parentName) {
   document.getElementById('parentEditName').value = parentName;
   document.getElementById('parentEditColor').value = parents[parentName]?.color || '#888';
   document.getElementById('parentEditOverlay').classList.add('show');
+  document.getElementById('parentEditName').focus();
 }
 function closeParentEdit() {
   document.getElementById('parentEditOverlay').classList.remove('show');
@@ -586,6 +587,7 @@ function openTaskEditPopup(task) {
     .map(p => `<option value="${p}" ${task.parent === p ? 'selected' : ''}>${p}</option>`)
     .join('');
   document.getElementById('taskEditOverlay').classList.add('show');
+  document.getElementById('taskEditDesc').focus();
 }
 function closeTaskEdit() {
   document.getElementById('taskEditOverlay').classList.remove('show');
@@ -610,6 +612,7 @@ function openBoardTitlePopup() {
   const currentTitle = document.getElementById('boardTitle').textContent;
   document.getElementById('boardTitleInput').value = currentTitle;
   document.getElementById('titleEditOverlay').classList.add('show');
+  document.getElementById('boardTitleInput').focus();
 }
 function saveBoardTitle() {
   const newTitle = document.getElementById('boardTitleInput').value.trim();
@@ -632,6 +635,7 @@ function openSubtaskEditPopup(task, subtaskIndex) {
   const subtask = task.subtasks[subtaskIndex];
   document.getElementById('subtaskEditInput').value = subtask.desc;
   document.getElementById('subtaskEditOverlay').classList.add('show');
+  document.getElementById('subtaskEditInput').focus();
 }
 function saveSubtaskEdit() {
   const newDesc = document.getElementById('subtaskEditInput').value.trim();
