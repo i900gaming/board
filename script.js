@@ -809,6 +809,53 @@ function showNotification(message = "Hinweis", type = "info") {
 }
 
 
+const firebaseConfig = {
+  apiKey: "AIzaSyBRUS71ELv2S8icpsDGwA0xkMgMqOnIR7Q",
+  authDomain: "true-life-leveling.firebaseapp.com",
+  databaseURL: "https://true-life-leveling-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "true-life-leveling",
+  storageBucket: "true-life-leveling.firebasestorage.app",
+  messagingSenderId: "504663321518",
+  appId: "1:504663321518:web:9bc2ad677db241832b763f",
+  measurementId: "G-HP24QX7SE8"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+// 🔸 Board speichern
+async function saveBoardToFirebase() {
+const data = {
+  title: document.getElementById('boardTitle').textContent,
+  parents,
+  tasks
+};
+await setDoc(doc(db, "boards", "mainBoard"), data);
+showNotification("✅ In Firebase gespeichert", "success");
+}
+
+async function listBoardsInFirebase() {
+  const querySnapshot = await getDocs(collection(db, "boards"));
+  const boardList = document.getElementById('boardList');
+  boardList.innerHTML = ""; // leeren
+
+  if (querySnapshot.empty) {
+    boardList.innerHTML = "<p>Keine Boards gefunden.</p>";
+    return;
+  }
+
+  querySnapshot.forEach((docSnap) => {
+    const boardId = docSnap.id;
+    const btn = document.createElement('button');
+    btn.textContent = boardId;
+    btn.onclick = () => {
+      document.getElementById('boardIdInput').value = boardId;
+      loadBoardFromFirebase(boardId);
+    };
+    boardList.appendChild(btn);
+  });
+}
+
 async function loadBoardFromFirebase(boardId) {
   const docRef = doc(db, "boards", boardId);
   const snap = await getDoc(docRef);
@@ -836,95 +883,6 @@ function loadSelectedBoard() {
   if (id) loadBoardFromFirebase(id);
   else showNotification("Bitte Board-Namen angeben", "warning");
 }
-
-async function listBoardsInFirebase() {
-  const querySnapshot = await getDocs(collection(db, "boards"));
-  const boardList = document.getElementById('boardList');
-  boardList.innerHTML = ""; // leeren
-
-  if (querySnapshot.empty) {
-    boardList.innerHTML = "<p>Keine Boards gefunden.</p>";
-    return;
-  }
-
-  querySnapshot.forEach((docSnap) => {
-    const boardId = docSnap.id;
-    const btn = document.createElement('button');
-    btn.textContent = boardId;
-    btn.onclick = () => {
-      document.getElementById('boardIdInput').value = boardId;
-      loadBoardFromFirebase(boardId);
-    };
-    boardList.appendChild(btn);
-  });
-}
-
-
-
-	  const firebaseConfig = {
-		  apiKey: "AIzaSyBRUS71ELv2S8icpsDGwA0xkMgMqOnIR7Q",
-		  authDomain: "true-life-leveling.firebaseapp.com",
-		  databaseURL: "https://true-life-leveling-default-rtdb.europe-west1.firebasedatabase.app",
-		  projectId: "true-life-leveling",
-		  storageBucket: "true-life-leveling.firebasestorage.app",
-		  messagingSenderId: "504663321518",
-		  appId: "1:504663321518:web:9bc2ad677db241832b763f",
-		  measurementId: "G-HP24QX7SE8"
-		};
-
-	  const app = initializeApp(firebaseConfig);
-	  const db = getFirestore(app);
-
-	  // 🔸 Board speichern
-	  async function saveBoardToFirebase() {
-		const data = {
-		  title: document.getElementById('boardTitle').textContent,
-		  parents,
-		  tasks
-		};
-		await setDoc(doc(db, "boards", "mainBoard"), data);
-		showNotification("✅ In Firebase gespeichert", "success");
-	  }
-	  
-	window.listBoardsInFirebase = async function () {
-	  const querySnapshot = await getDocs(collection(db, "boards"));
-	  const boardList = document.getElementById('boardList');
-	  boardList.innerHTML = "";
-
-	  if (querySnapshot.empty) {
-		boardList.innerHTML = "<p>Keine Boards gefunden.</p>";
-		return;
-	  }
-
-	  querySnapshot.forEach((docSnap) => {
-		const boardId = docSnap.id;
-		const btn = document.createElement('button');
-		btn.textContent = boardId;
-		btn.onclick = () => {
-		  document.getElementById('boardIdInput').value = boardId;
-		  loadBoardFromFirebase(boardId);
-		};
-		boardList.appendChild(btn);
-	  });
-	};
-
-	  // 🔹 Board laden
-	  async function loadBoardFromFirebase() {
-		const docRef = doc(db, "boards", "mainBoard");
-		const snap = await getDoc(docRef);
-		if (snap.exists()) {
-		  const data = snap.data();
-		  parents = data.parents || {};
-		  tasks = data.tasks || [];
-		  document.getElementById('boardTitle').textContent = data.title || 'Sprint Board';
-		  updateParentSelect();
-		  renderBoard();
-		  showNotification("📥 Board aus Firebase geladen", "info");
-		} else {
-		  showNotification("⚠️ Kein Board gefunden", "warning");
-		}
-	  }
-
-	  // Optional: automatische Ladung beim Start
-	  window.loadBoardFromFirebase = loadBoardFromFirebase;
-	  window.saveBoardToFirebase = saveBoardToFirebase;
+// Optional: automatische Ladung beim Start
+//window.loadBoardFromFirebase = loadBoardFromFirebase;
+//window.saveBoardToFirebase = saveBoardToFirebase;
