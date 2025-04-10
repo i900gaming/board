@@ -5,6 +5,8 @@
   <title>Lokales Sprint Board</title>
   <link rel="stylesheet" href="style.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600&display=swap" rel="stylesheet">
+  <script type="module" src="script.js"></script>
+
 </head>
 <body>
 	
@@ -12,6 +14,19 @@
   <div><select id="parentSelect" style="display: none;"></select></div>
   
   <div class="import-export-buttons">
+	  <div class="board-switcher">
+		  <input type="text" id="boardIdInput" placeholder="Board-Name z.B. 'Sprint01'" />
+		  <button onclick="saveCurrentBoard()">Save</button>
+		  <button onclick="loadSelectedBoard()">Load</button>
+	</div>
+	<div class="board-list-wrapper">
+	  <h3>📂 Gespeicherte Boards</h3>
+	  <div id="boardList" class="board-list"></div>
+	</div>
+	<button onclick="listBoardsInFirebase()">🔄 Liste aktualisieren</button>
+
+	  <button onclick="saveBoardToFirebase()">Save to Firebase</button>
+	  <button onclick="loadBoardFromFirebase()">Load from Firebase</button>
 	<button onclick="saveNewFile()">Save As New</button>
 	<button onclick="openFile()">Open</button>
     <button onclick="toggleEditMode()" id="editToggleButton">Edit</button>
@@ -96,6 +111,6 @@
 
 <div id="notification" class="notification-toast">Datei gespeichert.</div>
 
-  <script src="script.js" defer></script>
+
 </body>
 </html>

@@ -5,6 +5,11 @@ let editMode = false;
 let fileHandle = null;
 let currentFileName = null;
 let currentParentName = null;
+
+import { collection, getDocs } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js";
+import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
+  
 //Debug Modus
 const DEBUG = true;
 function log(...args) {
@@ -802,3 +807,111 @@ function showNotification(message = "Hinweis", type = "info") {
     el.classList.remove('show');
   }, 2500);
 }
+
+
+async function loadBoardFromFirebase(boardId) {
+  const docRef = doc(db, "boards", boardId);
+  const snap = await getDoc(docRef);
+  if (snap.exists()) {
+    const data = snap.data();
+    parents = data.parents || {};
+    tasks = data.tasks || [];
+    document.getElementById('boardTitle').textContent = data.title || boardId;
+    updateParentSelect();
+    renderBoard();
+    showNotification(`📥 Board '${boardId}' geladen`, "info");
+  } else {
+    showNotification(`⚠️ Board '${boardId}' nicht gefunden`, "warning");
+  }
+}
+async function saveBoardToFirebase(boardId) {
+  const data = {
+    title: document.getElementById('boardTitle').textContent,
+    parents,
+    tasks
+  };
+  await setDoc(doc(db, "boards", boardId), data);
+  showNotification(`✅ Board '${boardId}' gespeichert`, "success");
+}
+
+function saveCurrentBoard() {
+  const id = document.getElementById('boardIdInput').value.trim();
+  if (id) saveBoardToFirebase(id);
+  else showNotification("Bitte Board-Namen angeben", "warning");
+}
+
+function loadSelectedBoard() {
+  const id = document.getElementById('boardIdInput').value.trim();
+  if (id) loadBoardFromFirebase(id);
+  else showNotification("Bitte Board-Namen angeben", "warning");
+}
+
+async function listBoardsInFirebase() {
+  const querySnapshot = await getDocs(collection(db, "boards"));
+  const boardList = document.getElementById('boardList');
+  boardList.innerHTML = ""; // leeren
+
+  if (querySnapshot.empty) {
+    boardList.innerHTML = "<p>Keine Boards gefunden.</p>";
+    return;
+  }
+
+  querySnapshot.forEach((docSnap) => {
+    const boardId = docSnap.id;
+    const btn = document.createElement('button');
+    btn.textContent = boardId;
+    btn.onclick = () => {
+      document.getElementById('boardIdInput').value = boardId;
+      loadBoardFromFirebase(boardId);
+    };
+    boardList.appendChild(btn);
+  });
+}
+
+
+
+	  const firebaseConfig = {
+		  apiKey: "AIzaSyBRUS71ELv2S8icpsDGwA0xkMgMqOnIR7Q",
+		  authDomain: "true-life-leveling.firebaseapp.com",
+		  databaseURL: "https://true-life-leveling-default-rtdb.europe-west1.firebasedatabase.app",
+		  projectId: "true-life-leveling",
+		  storageBucket: "true-life-leveling.firebasestorage.app",
+		  messagingSenderId: "504663321518",
+		  appId: "1:504663321518:web:9bc2ad677db241832b763f",
+		  measurementId: "G-HP24QX7SE8"
+		};
+
+	  const app = initializeApp(firebaseConfig);
+	  const db = getFirestore(app);
+
+	  // 🔸 Board speichern
+	  async function saveBoardToFirebase() {
+		const data = {
+		  title: document.getElementById('boardTitle').textContent,
+		  parents,
+		  tasks
+		};
+		await setDoc(doc(db, "boards", "mainBoard"), data);
+		showNotification("✅ In Firebase gespeichert", "success");
+	  }
+
+	  // 🔹 Board laden
+	  async function loadBoardFromFirebase() {
+		const docRef = doc(db, "boards", "mainBoard");
+		const snap = await getDoc(docRef);
+		if (snap.exists()) {
+		  const data = snap.data();
+		  parents = data.parents || {};
+		  tasks = data.tasks || [];
+		  document.getElementById('boardTitle').textContent = data.title || 'Sprint Board';
+		  updateParentSelect();
+		  renderBoard();
+		  showNotification("📥 Board aus Firebase geladen", "info");
+		} else {
+		  showNotification("⚠️ Kein Board gefunden", "warning");
+		}
+	  }
+
+	  // Optional: automatische Ladung beim Start
+	  window.loadBoardFromFirebase = loadBoardFromFirebase;
+	  window.saveBoardToFirebase = saveBoardToFirebase;
