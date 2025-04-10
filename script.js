@@ -824,15 +824,6 @@ async function loadBoardFromFirebase(boardId) {
     showNotification(`⚠️ Board '${boardId}' nicht gefunden`, "warning");
   }
 }
-async function saveBoardToFirebase(boardId) {
-  const data = {
-    title: document.getElementById('boardTitle').textContent,
-    parents,
-    tasks
-  };
-  await setDoc(doc(db, "boards", boardId), data);
-  showNotification(`✅ Board '${boardId}' gespeichert`, "success");
-}
 
 function saveCurrentBoard() {
   const id = document.getElementById('boardIdInput').value.trim();
@@ -894,6 +885,28 @@ async function listBoardsInFirebase() {
 		await setDoc(doc(db, "boards", "mainBoard"), data);
 		showNotification("✅ In Firebase gespeichert", "success");
 	  }
+	  
+	window.listBoardsInFirebase = async function () {
+	  const querySnapshot = await getDocs(collection(db, "boards"));
+	  const boardList = document.getElementById('boardList');
+	  boardList.innerHTML = "";
+
+	  if (querySnapshot.empty) {
+		boardList.innerHTML = "<p>Keine Boards gefunden.</p>";
+		return;
+	  }
+
+	  querySnapshot.forEach((docSnap) => {
+		const boardId = docSnap.id;
+		const btn = document.createElement('button');
+		btn.textContent = boardId;
+		btn.onclick = () => {
+		  document.getElementById('boardIdInput').value = boardId;
+		  loadBoardFromFirebase(boardId);
+		};
+		boardList.appendChild(btn);
+	  });
+	};
 
 	  // 🔹 Board laden
 	  async function loadBoardFromFirebase() {
