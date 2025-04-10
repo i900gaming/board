@@ -805,54 +805,6 @@ function showNotification(message = "Hinweis", type = "info") {
   }, 2500);
 }
 
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js";
-import {
-  getAuth,
-  signInAnonymously,
-  onAuthStateChanged
-} from "https://www.gstatic.com/firebasejs/10.9.0/firebase-auth.js";
-import {
-  getFirestore,
-  collection,
-  getDocs,
-  doc,
-  setDoc,
-  getDoc
-} from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
-
-const firebaseConfig = {
-  apiKey: "AIzaSyBRUS71ELv2S8icpsDGwA0xkMgMqOnIR7Q",
-  authDomain: "true-life-leveling.firebaseapp.com",
-  databaseURL: "https://true-life-leveling-default-rtdb.europe-west1.firebasedatabase.app",
-  projectId: "true-life-leveling",
-  storageBucket: "true-life-leveling.firebasestorage.app",
-  messagingSenderId: "504663321518",
-  appId: "1:504663321518:web:9bc2ad677db241832b763f",
-  measurementId: "G-HP24QX7SE8"
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-const auth = getAuth(app);
-
-let currentUser = null;
-signInAnonymously(auth)
-  .then(() => {
-    showNotification("🔐 Eingeloggt (anonym)", "info");
-  })
-  .catch((error) => {
-    console.error("Anmeldung fehlgeschlagen:", error);
-    showNotification("Fehler beim Login", "error");
-  });
-
-onAuthStateChanged(auth, (user) => {
-  if (user) {
-    currentUser = user;
-    console.log("✅ Eingeloggt als:", user.uid);
-  } else {
-    currentUser = null;
-  }
-});
 
 // 🔽 Ein bestimmtes Board laden
 window.loadBoardFromFirebase = async function (boardId) {
@@ -915,7 +867,17 @@ window.listBoardsInFirebase = async function () {
   });
 };
 
+window.loginWithEmail = async function () {
+  const email = document.getElementById("loginEmail").value.trim();
+  const password = document.getElementById("loginPassword").value.trim();
 
+  try {
+    await signInWithEmailAndPassword(auth, email, password);
+    showNotification("✅ Eingeloggt", "success");
+  } catch (err) {
+    showNotification("❌ Fehler beim Login", "error");
+  }
+};
 // 🔸 Board speichern
 // Optional: automatische Ladung beim Start
 window.loadBoardFromFirebase = loadBoardFromFirebase;

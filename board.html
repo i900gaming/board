@@ -14,7 +14,29 @@
   
   <div class="import-export-buttons">
   
-  
+   <!-- Auth Bereich -->
+	<div class="auth-wrapper">
+		<h3>Login</h3>
+		<input type="email" id="loginEmail" placeholder="E-Mail">
+		<input type="password" id="loginPassword" placeholder="Passwort">
+		<button onclick="loginWithEmail()">Anmelden</button>
+		<button onclick="registerWithEmail()">Registrieren</button>
+		<button onclick="logout()">Abmelden</button>
+		<div id="authStatus">Nicht eingeloggt</div>
+	</div>
+	<!-- Board Verwaltung -->
+	<div class="board-switcher">
+		<input type="text" id="boardIdInput" placeholder="Board-Name z. B. 'Sprint01'">
+		<button onclick="saveCurrentBoard()">📤 Save</button>
+		<button onclick="loadSelectedBoard()">📥 Load</button>
+		<button onclick="listBoardsInFirebase()">🔄 Liste</button>
+	</div>
+	<div class="board-list-wrapper">
+		<h3>📂 Gespeicherte Boards</h3>
+		<div id="boardList" class="board-list"></div>
+	</div>
+	
+	
 	<input type="text" id="boardIdInput" placeholder="Board-Name" />
 	<button onclick="saveBoardToFirebase(document.getElementById('boardIdInput').value)">Save</button>
 	<button onclick="loadBoardFromFirebase(document.getElementById('boardIdInput').value)">Load</button>
