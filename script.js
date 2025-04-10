@@ -5,7 +5,6 @@ let editMode = false;
 let fileHandle = null;
 let currentFileName = null;
 let currentParentName = null;
-
 //Debug Modus
 const DEBUG = true;
 function log(...args) {
@@ -31,6 +30,12 @@ function toggleEditMode() {
 
 function saveBoard() {
   localStorage.setItem('boardData', JSON.stringify({ parents, tasks }));
+  if (typeof saveExistingFile === 'function' && fileHandle) {
+    saveExistingFile().catch(err => {
+      console.warn("Automatisches Speichern fehlgeschlagen:", err);
+      showNotification("Fehler beim Speichern.", "error");
+    });
+  }
 }
 
 function loadBoard() {
@@ -399,32 +404,6 @@ function renderBoard() {
   });
 }
 
-function openPopup(task) {
-  currentTask = task;
-  document.getElementById('popupTitle').textContent = 'Task bearbeiten';
-  document.getElementById('popupBody').innerHTML = `
-    <label for="editDesc">Beschreibung</label>
-    <input type="text" id="editDesc" value="${task.desc}">
-
-    <label for="editParent">Parent</label>
-    <select id="editParent">
-      ${Object.keys(parents).map(p =>
-        `<option value="${p}" ${p === task.parent ? 'selected' : ''}>${p}</option>`
-      ).join('')}
-    </select>
-
-    <label for="editDueDate">Fälligkeitsdatum</label>
-    <input type="date" id="editDueDate" value="${task.dueDate || ''}">
-  `;
-
-  document.getElementById('popupButtons').innerHTML = `
-    <button onclick="saveEdit()">💾 Speichern</button>
-    <button onclick="closePopup()">❌ Abbrechen</button>
-    <button onclick="deleteCurrent()" class="danger">🗑 Löschen</button>
-  `;
-  document.getElementById('overlay').classList.add('show');
-}
-
 function closePopup() {
   document.getElementById('overlay').classList.remove('show');
   document.getElementById('popupBody').innerHTML = '';
@@ -442,39 +421,6 @@ function saveEdit() {
   renderBoard();
   closePopup();
 }
-
-
-function saveEditalt() {
-  if (currentTask) {
-    const oldParent = currentTask.parent;
-    const newDesc = document.getElementById('editDesc').value;
-    const newParent = document.getElementById('editParent').value;
-	currentTask.dueDate = document.getElementById('editDueDate').value;
-
-    currentTask.desc = newDesc;
-
-    if (newParent !== oldParent) {
-      // Parent umbenennen:
-      if (parents[oldParent] && !parents[newParent]) {
-        parents[newParent] = parents[oldParent]; // Farbe übernehmen
-        delete parents[oldParent];
-
-        // Alle Tasks updaten, die zu diesem Parent gehören
-        tasks.forEach(t => {
-          if (t.parent === oldParent) {
-            t.parent = newParent;
-          }
-        });
-      }
-    }
-
-    updateParentSelect();
-    saveBoard();
-    renderBoard();
-    closePopup();
-  }
-}
-
 
 function deleteCurrent() {
   tasks = tasks.filter(t => t !== currentTask);
@@ -502,43 +448,11 @@ function exportData() {
 	URL.revokeObjectURL(url);
 }
 
-function importData(e) {
-  const file = e.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = evt => {
-    const data = JSON.parse(evt.target.result);
-    parents = data.parents || {};
-    tasks = data.tasks || [];
-
-    if (data.title) {
-      document.getElementById('boardTitle').textContent = data.title;
-      localStorage.setItem('sprintBoardTitle', data.title); // auch lokal speichern
-    }
-	for (const key in parents) {
-	  if (typeof parents[key] === 'string') {
-		parents[key] = {
-		  color: parents[key],
-		  order: 0
-		};
-	  } else {
-		if (!parents[key].color) parents[key].color = '#999';
-		if (typeof parents[key].order !== 'number') parents[key].order = 0;
-	  }
-	}
-    updateParentSelect();
-    renderBoard();
-    saveBoard();
-  };
-  reader.readAsText(file);
-}
-
 // Popups
 
 //Parent------------------------------------------------------------
-let currentParent = null;
 function openParentEditPopup(parentName) {
-  currentParent = parentName;
+  currentParentName = parentName;
   document.getElementById('parentEditName').value = parentName;
   document.getElementById('parentEditColor').value = parents[parentName]?.color || '#888';
   document.getElementById('parentEditOverlay').classList.add('show');
@@ -547,9 +461,10 @@ function openParentEditPopup(parentName) {
 function closeParentEdit() {
   document.getElementById('parentEditOverlay').classList.remove('show');
 }
-function saveParentEdit() {
+function saveParentEditasd() {
 	const newName = document.getElementById('parentEditName').value.trim();
 	const newColor = document.getElementById('parentEditColor').value;
+	
 	if (!newName) return;
 	if (newName !== currentParentName) {
 		parents[newName] = { ...parents[currentParentName], color: newColor };
@@ -558,10 +473,44 @@ function saveParentEdit() {
 			if (t.parent === currentParentName) t.parent = newName;
 		});
 	}
+	currentParentName = null;
 	saveBoard();
 	renderBoard();
 	closeParentEdit();
 }
+
+function saveParentEdit() { 
+  const newName = document.getElementById('parentEditName').value.trim();
+  const newColor = document.getElementById('parentEditColor').value;
+  log("newName:", newName);
+  log("newColor:", newColor);
+  log("newColor:", currentParentName);
+  if (!newName || !currentParentName) return;
+  if (newName !== currentParentName) {
+    if (parents[newName]) {
+      showNotification("Ein Parent mit diesem Namen existiert bereits.", "warning");
+      return;
+    }
+    parents[newName] = {
+      ...parents[currentParentName],
+      color: newColor
+    };
+    tasks.forEach(t => {
+      if (t.parent === currentParentName) t.parent = newName;
+    });
+    delete parents[currentParentName];
+  } else {
+    if (parents[newName]) {
+      parents[newName].color = newColor;
+    }
+  }
+  currentParentName = null;
+  saveBoard();
+  renderBoard();
+  closeParentEdit();
+}
+
+
 function deleteParent() {
 	log("deleteParent:", "start");
 	  if (!currentParent) return;
@@ -621,6 +570,7 @@ function saveBoardTitle() {
     localStorage.setItem('boardTitle', newTitle); // optional speicherbar
   }
   closeTitleEdit();
+  saveBoard();
 }
 function closeTitleEdit() {
   document.getElementById('titleEditOverlay').classList.remove('show');
@@ -690,19 +640,14 @@ function isLightColor(hex) {
 	  return luminance > 186;
 }
 
-function toggleSaveMenu() {
-  document.getElementById('saveMenu').classList.toggle('hidden');
-}
-
 function updateCurrentFileDisplay() {
-	const display = document.getElementById('currentFileName');
+	const display = document.getElementById('currentFileNameDisplay');
 	if (currentFileName) {
 	display.textContent = `File: ${currentFileName}`;
 	} else {
 	display.textContent = '';
 	}
 }
-
 function showSaveMenu() {
   document.getElementById('saveMenu').classList.remove('hidden');
 }
@@ -710,6 +655,7 @@ function showSaveMenu() {
 function hideSaveMenu() {
   document.getElementById('saveMenu').classList.add('hidden');
 }
+
 
 async function openFile() {
   try {
@@ -724,25 +670,72 @@ async function openFile() {
     const contents = await file.text();
     const data = JSON.parse(contents);
 
-    // Lade Inhalte
-    parents = data.parents || {};
+    // Anpassung an neue Struktur
+    parents = {};
+
+    if (data.parents) {
+      // Neue Struktur (Objekt mit Farbangaben & Co.)
+      for (const [key, value] of Object.entries(data.parents)) {
+        if (typeof value === 'object') {
+          parents[key] = {
+            color: value.color || '#888',
+            order: value.order ?? 0
+          };
+        } else {
+          // Support für alte Struktur (direkter Farbwert)
+          parents[key] = { color: value, order: 0 };
+        }
+      }
+    }
+
     tasks = data.tasks || [];
+
     if (data.title) {
       document.getElementById('boardTitle').textContent = data.title;
       localStorage.setItem('sprintBoardTitle', data.title);
     }
-
     updateParentSelect();
     renderBoard();
-    saveBoard();
-	currentFileName = fileHandle.name;
-	updateCurrentFileDisplay();
-    alert("Datei erfolgreich geladen.");
+    //saveBoard();
+    currentFileName = fileHandle.name;
+    updateCurrentFileDisplay();
+	showNotification("Datei erfolgreich geladen.", "success");
   } catch (err) {
-    console.error("Datei öffnen abgebrochen oder fehlgeschlagen:", err);
+	 showNotification("Datei öffnen fehlgeschlagen.", err);
   }
 }
 
+function importData(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = evt => {
+    const data = JSON.parse(evt.target.result);
+    parents = data.parents || {};
+    tasks = data.tasks || [];
+
+    if (data.title) {
+      document.getElementById('boardTitle').textContent = data.title;
+      localStorage.setItem('sprintBoardTitle', data.title); // auch lokal speichern
+    }
+	for (const key in parents) {
+	  if (typeof parents[key] === 'string') {
+		parents[key] = {
+		  color: parents[key],
+		  order: 0
+		};
+	  } else {
+		if (!parents[key].color) parents[key].color = '#999';
+		if (typeof parents[key].order !== 'number') parents[key].order = 0;
+	  }
+	}
+    updateParentSelect();
+    renderBoard();
+    saveBoard();
+    updateCurrentFileDisplay();
+  };
+  reader.readAsText(file);
+}
 
 async function saveNewFile() {
   const title = document.getElementById('boardTitle').textContent;
@@ -751,7 +744,6 @@ async function saveNewFile() {
     parents,
     tasks
   };
-
   try {
     fileHandle = await window.showSaveFilePicker({
       suggestedName: `${title}.json`,
@@ -771,36 +763,42 @@ async function saveNewFile() {
   } catch (err) {
     console.error("Speichern abgebrochen oder fehlgeschlagen:", err);
   }
-
-  toggleSaveMenu();
 }
+
 
 async function saveExistingFile() {
   if (!fileHandle) {
-    alert("Keine Datei zum Überschreiben vorhanden. Bitte zuerst 'Open' oder 'Save as new' verwenden.");
+	showNotification("Keine Datei zum Überschreiben vorhanden. Bitte zuerst 'Open' oder 'Save as new' verwenden.","error");
     return;
   }
-
   const data = {
     title: document.getElementById('boardTitle').textContent,
     parents,
     tasks
   };
-
   try {
     const writable = await fileHandle.createWritable();
     await writable.write(JSON.stringify(data, null, 2));
     await writable.close();
-    alert("Datei überschrieben.");
+    showNotification("Datei erfolgreich überschrieben.","success");
   } catch (err) {
     console.error("Fehler beim Speichern:", err);
   }
 
-  toggleSaveMenu();
 }
 
+function showNotification(message = "Hinweis", type = "info") {
+  const el = document.getElementById('notification');
+  if (!el) return;
 
-window.onload = () => {
-  loadBoard();
-  loadBoardTitle();
-};
+  el.textContent = message;
+
+  // Alte Klassen entfernen
+  el.className = 'notification-toast'; // Reset
+  el.classList.add(type);
+  el.classList.add('show');
+
+  setTimeout(() => {
+    el.classList.remove('show');
+  }, 2500);
+}

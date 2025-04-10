@@ -12,10 +12,11 @@
   <div><select id="parentSelect" style="display: none;"></select></div>
   
   <div class="import-export-buttons">
-    <button onclick="exportData()">Save</button>
-    <label for="importFile">Open<input type="file" id="importFile" onchange="importData(event)"></label>
+	<button onclick="saveNewFile()">Save As New</button>
+	<button onclick="openFile()">Open</button>
     <button onclick="toggleEditMode()" id="editToggleButton">Edit</button>
     <button onclick="toggleCollapseAll()" id="collapseToggleButton">Collapse</button>
+	<div class="current-file-info">Aktuelle Datei: <span id="currentFileNameDisplay">–</span></div>
   </div>
 
 	<div class="board">
@@ -93,6 +94,7 @@
 		  </div>
 		</div>
 
+<div id="notification" class="notification-toast">Datei gespeichert.</div>
 
   <script src="script.js" defer></script>
 </body>

@@ -510,3 +510,91 @@ body {
 .popup-buttons button:hover {
   background-color: #555;
 }
+
+
+.save-button-wrapper {
+  position: relative;
+  display: inline-block;
+}
+.save-button-main {
+  padding: 10px;
+  font-size: 1rem;
+  background-color: #444;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  min-width: 100px;
+}
+.save-button-main:hover {
+  background-color: #555;
+}
+.save-button-dropdown {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: 4px;
+  background-color: #2c2c2c;
+  border: 1px solid #444;
+  border-radius: 4px;
+  z-index: 1001;
+  min-width: 160px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.save-button-wrapper:hover .save-button-dropdown {
+  display: block;
+}
+.save-button-option {
+  width: 100%;
+  padding: 10px;
+  text-align: left;
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1rem;
+  cursor: pointer;
+}
+.save-button-option:hover {
+  background-color: #444;
+}
+
+
+.notification-toast {
+  position: fixed;
+  bottom: 50px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #2c2c2c;
+  color: #fff;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 1.5rem;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  z-index: 2000;
+}
+/* Typvarianten */
+.notification-toast.info {
+  background-color: #2c2c2c;
+  color: #ccc;
+}
+.notification-toast.success {
+  background-color: #1e8e3e;
+  color: #fff;
+}
+.notification-toast.error {
+  background-color: #b3261e;
+  color: #fff;
+}
+.notification-toast.warning {
+  background-color: #e6a500;
+  color: #000;
+}
+.notification-toast.show {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateX(-50%) translateY(0);
+}
