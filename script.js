@@ -807,6 +807,11 @@ function showNotification(message = "Hinweis", type = "info") {
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js";
 import {
+  getAuth,
+  signInAnonymously,
+  onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/10.9.0/firebase-auth.js";
+import {
   getFirestore,
   collection,
   getDocs,
@@ -814,8 +819,6 @@ import {
   setDoc,
   getDoc
 } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
-
-import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-auth.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBRUS71ELv2S8icpsDGwA0xkMgMqOnIR7Q",
@@ -830,10 +833,32 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+const auth = getAuth(app);
+
+let currentUser = null;
+signInAnonymously(auth)
+  .then(() => {
+    showNotification("🔐 Eingeloggt (anonym)", "info");
+  })
+  .catch((error) => {
+    console.error("Anmeldung fehlgeschlagen:", error);
+    showNotification("Fehler beim Login", "error");
+  });
+
+onAuthStateChanged(auth, (user) => {
+  if (user) {
+    currentUser = user;
+    console.log("✅ Eingeloggt als:", user.uid);
+  } else {
+    currentUser = null;
+  }
+});
 
 // 🔽 Ein bestimmtes Board laden
 window.loadBoardFromFirebase = async function (boardId) {
-  const ref = doc(db, "boards", boardId);
+  if (!currentUser) return;
+
+  const ref = doc(db, "users", currentUser.uid, "boards", boardId);
   const snap = await getDoc(ref);
 
   if (snap.exists()) {
@@ -849,29 +874,36 @@ window.loadBoardFromFirebase = async function (boardId) {
   }
 };
 
+
 // 🔼 Aktuelles Board speichern
 window.saveBoardToFirebase = async function (boardId) {
+  if (!currentUser) return;
+
+  const ref = doc(db, "users", currentUser.uid, "boards", boardId);
   const data = {
     title: document.getElementById('boardTitle').textContent,
     parents,
     tasks
   };
 
-  await setDoc(doc(db, "boards", boardId), data);
+  await setDoc(ref, data);
   showNotification(`✅ Board '${boardId}' gespeichert`, "success");
 };
 
 window.listBoardsInFirebase = async function () {
-  const querySnapshot = await getDocs(collection(db, "boards"));
+  if (!currentUser) return;
+
   const boardList = document.getElementById('boardList');
   boardList.innerHTML = "";
 
-  if (querySnapshot.empty) {
+  const qSnap = await getDocs(collection(db, "users", currentUser.uid, "boards"));
+
+  if (qSnap.empty) {
     boardList.innerHTML = "<p>Keine Boards gefunden.</p>";
     return;
   }
 
-  querySnapshot.forEach((docSnap) => {
+  qSnap.forEach((docSnap) => {
     const boardId = docSnap.id;
     const btn = document.createElement('button');
     btn.textContent = boardId;
@@ -882,6 +914,7 @@ window.listBoardsInFirebase = async function () {
     boardList.appendChild(btn);
   });
 };
+
 
 // 🔸 Board speichern
 // Optional: automatische Ladung beim Start
