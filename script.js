@@ -6,9 +6,6 @@ let fileHandle = null;
 let currentFileName = null;
 let currentParentName = null;
 
-import { collection, getDocs } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js";
-import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
   
 //Debug Modus
 const DEBUG = true;
@@ -808,6 +805,17 @@ function showNotification(message = "Hinweis", type = "info") {
   }, 2500);
 }
 
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js";
+import {
+  getFirestore,
+  collection,
+  getDocs,
+  doc,
+  setDoc,
+  getDoc
+} from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
+
+import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-auth.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBRUS71ELv2S8icpsDGwA0xkMgMqOnIR7Q",
@@ -823,21 +831,40 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// 🔸 Board speichern
-async function saveBoardToFirebase() {
-const data = {
-  title: document.getElementById('boardTitle').textContent,
-  parents,
-  tasks
-};
-await setDoc(doc(db, "boards", "mainBoard"), data);
-showNotification("✅ In Firebase gespeichert", "success");
-}
+// 🔽 Ein bestimmtes Board laden
+window.loadBoardFromFirebase = async function (boardId) {
+  const ref = doc(db, "boards", boardId);
+  const snap = await getDoc(ref);
 
-async function listBoardsInFirebase() {
+  if (snap.exists()) {
+    const data = snap.data();
+    parents = data.parents || {};
+    tasks = data.tasks || [];
+    document.getElementById('boardTitle').textContent = data.title || boardId;
+    updateParentSelect?.();
+    renderBoard?.();
+    showNotification(`📥 Board '${boardId}' geladen`, "info");
+  } else {
+    showNotification(`⚠️ Board '${boardId}' nicht gefunden`, "warning");
+  }
+};
+
+// 🔼 Aktuelles Board speichern
+window.saveBoardToFirebase = async function (boardId) {
+  const data = {
+    title: document.getElementById('boardTitle').textContent,
+    parents,
+    tasks
+  };
+
+  await setDoc(doc(db, "boards", boardId), data);
+  showNotification(`✅ Board '${boardId}' gespeichert`, "success");
+};
+
+window.listBoardsInFirebase = async function () {
   const querySnapshot = await getDocs(collection(db, "boards"));
   const boardList = document.getElementById('boardList');
-  boardList.innerHTML = ""; // leeren
+  boardList.innerHTML = "";
 
   if (querySnapshot.empty) {
     boardList.innerHTML = "<p>Keine Boards gefunden.</p>";
@@ -850,39 +877,13 @@ async function listBoardsInFirebase() {
     btn.textContent = boardId;
     btn.onclick = () => {
       document.getElementById('boardIdInput').value = boardId;
-      loadBoardFromFirebase(boardId);
+      window.loadBoardFromFirebase(boardId);
     };
     boardList.appendChild(btn);
   });
-}
+};
 
-async function loadBoardFromFirebase(boardId) {
-  const docRef = doc(db, "boards", boardId);
-  const snap = await getDoc(docRef);
-  if (snap.exists()) {
-    const data = snap.data();
-    parents = data.parents || {};
-    tasks = data.tasks || [];
-    document.getElementById('boardTitle').textContent = data.title || boardId;
-    updateParentSelect();
-    renderBoard();
-    showNotification(`📥 Board '${boardId}' geladen`, "info");
-  } else {
-    showNotification(`⚠️ Board '${boardId}' nicht gefunden`, "warning");
-  }
-}
-
-function saveCurrentBoard() {
-  const id = document.getElementById('boardIdInput').value.trim();
-  if (id) saveBoardToFirebase(id);
-  else showNotification("Bitte Board-Namen angeben", "warning");
-}
-
-function loadSelectedBoard() {
-  const id = document.getElementById('boardIdInput').value.trim();
-  if (id) loadBoardFromFirebase(id);
-  else showNotification("Bitte Board-Namen angeben", "warning");
-}
+// 🔸 Board speichern
 // Optional: automatische Ladung beim Start
-//window.loadBoardFromFirebase = loadBoardFromFirebase;
-//window.saveBoardToFirebase = saveBoardToFirebase;
+window.loadBoardFromFirebase = loadBoardFromFirebase;
+window.saveBoardToFirebase = saveBoardToFirebase;

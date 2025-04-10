@@ -13,19 +13,14 @@
   <div><select id="parentSelect" style="display: none;"></select></div>
   
   <div class="import-export-buttons">
-	  <div class="board-switcher">
-		  <input type="text" id="boardIdInput" placeholder="Board-Name z.B. 'Sprint01'" />
-		  <button onclick="saveCurrentBoard()">Save</button>
-		  <button onclick="loadSelectedBoard()">Load</button>
-	</div>
-	<div class="board-list-wrapper">
-	  <h3>📂 Gespeicherte Boards</h3>
-	  <div id="boardList" class="board-list"></div>
-	</div>
-	<button onclick="listBoardsInFirebase()">🔄 Liste aktualisieren</button>
-
-	  <button onclick="saveBoardToFirebase()">Save to Firebase</button>
-	  <button onclick="loadBoardFromFirebase()">Load from Firebase</button>
+  
+  
+	<input type="text" id="boardIdInput" placeholder="Board-Name" />
+	<button onclick="saveBoardToFirebase(document.getElementById('boardIdInput').value)">📤 Save</button>
+	<button onclick="loadBoardFromFirebase(document.getElementById('boardIdInput').value)">📥 Load</button>
+	<button onclick="listBoardsInFirebase()">🔄 Liste anzeigen</button>
+	<div id="boardList"></div>
+	  
 	<button onclick="saveNewFile()">Save As New</button>
 	<button onclick="openFile()">Open</button>
     <button onclick="toggleEditMode()" id="editToggleButton">Edit</button>
