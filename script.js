@@ -5,8 +5,25 @@ let editMode = false;
 let fileHandle = null;
 let currentFileName = null;
 let currentParentName = null;
+let currentBoard = null;
+// script.js
+import {
+  auth,
+  db,
+  currentUser,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  signOut,
+  onAuthStateChanged,
+  doc,
+  setDoc,
+  getDoc,
+  addDoc,
+  collection,
+  getDocs
+} from './firebase.js';
 
-  
+
 //Debug Modus
 const DEBUG = true;
 function log(...args) {
@@ -87,7 +104,7 @@ function addTaskToParent(parent, status) {
   if (desc) {
     tasks.push({ desc, parent, status, subtasks: [], dueDate: null });
     renderBoard();
-    saveBoard();
+    saveBoardToFirebase();
   }
 }
 
@@ -97,7 +114,7 @@ function addSubtask(task) {
     task.subtasks = task.subtasks || [];
     task.subtasks.push({ desc, done: false });
     renderBoard();
-    saveBoard();
+    saveBoardToFirebase();
   }
 }
 
@@ -106,14 +123,14 @@ function editSubtask(task, subtask) {
   if (newDesc !== null) {
     subtask.desc = newDesc;
     renderBoard();
-    saveBoard();
+    saveBoardToFirebase();
   }
 }
 
 function toggleSubtaskDone(taskIndex, subtaskIndex) {
   tasks[taskIndex].subtasks[subtaskIndex].done = !tasks[taskIndex].subtasks[subtaskIndex].done;
-  saveBoard();
   renderBoard();
+  saveBoardToFirebase();
 }
 
 function addEmptyParentToColumn(status) {
@@ -126,7 +143,7 @@ function addEmptyParentToColumn(status) {
 	};
     tasks.push({ desc: 'taskname', parent: name, status, subtasks: [] });
     updateParentSelect();
-    saveBoard();
+    saveBoardToFirebase();
     renderBoard();
   } else if (parents[name]) {
     alert("Ein Parent mit diesem Namen existiert bereits.");
@@ -206,7 +223,7 @@ function renderBoard() {
         }
       });
 
-      saveBoard();
+      saveBoardToFirebase();
       renderBoard();
     };
 	
@@ -396,7 +413,7 @@ function renderBoard() {
     if (draggedTask) {
       draggedTask.status = status;
       renderBoard();
-      saveBoard();
+      saveBoardToFirebase();
     }
   } catch (err) {
     console.warn("Fehler beim Parsen von drop-Daten:", err);
@@ -419,7 +436,7 @@ function saveEdit() {
   currentTask.parent = document.getElementById('editParent').value;
   currentTask.dueDate = document.getElementById('editDueDate').value;
 
-  saveBoard();
+  saveBoardToFirebase();
   renderBoard();
   closePopup();
 }
@@ -427,7 +444,7 @@ function saveEdit() {
 function deleteCurrent() {
   tasks = tasks.filter(t => t !== currentTask);
   renderBoard();
-  saveBoard();
+  saveBoardToFirebase();
   closePopup();
 }
 
@@ -476,7 +493,7 @@ function saveParentEditasd() {
 		});
 	}
 	currentParentName = null;
-	saveBoard();
+	saveBoardToFirebase();
 	renderBoard();
 	closeParentEdit();
 }
@@ -507,7 +524,7 @@ function saveParentEdit() {
     }
   }
   currentParentName = null;
-  saveBoard();
+  saveBoardToFirebase();
   renderBoard();
   closeParentEdit();
 }
@@ -523,7 +540,7 @@ function deleteParent() {
 	  currentParent = null;
 	  updateParentSelect();
 	  
-	  saveBoard();
+	  saveBoardToFirebase();
 	  renderBoard();
 	  closeParentEdit();
 }
@@ -554,7 +571,7 @@ function saveTaskEdit() {
   currentTask.parent = newParent;
   currentTask.dueDate = newDueDate;
 
-  saveBoard();
+  saveBoardToFirebase();
   renderBoard();
   closeTaskEdit();
 }
@@ -572,7 +589,7 @@ function saveBoardTitle() {
     localStorage.setItem('boardTitle', newTitle); // optional speicherbar
   }
   closeTitleEdit();
-  saveBoard();
+  saveBoardToFirebase();
 }
 function closeTitleEdit() {
   document.getElementById('titleEditOverlay').classList.remove('show');
@@ -593,7 +610,7 @@ function saveSubtaskEdit() {
   const newDesc = document.getElementById('subtaskEditInput').value.trim();
   if (newDesc && currentSubtaskTask && currentSubtaskIndex !== null) {
     currentSubtaskTask.subtasks[currentSubtaskIndex].desc = newDesc;
-    saveBoard();
+    saveBoardToFirebase();
     renderBoard();
   }
   closeSubtaskEdit();
@@ -604,6 +621,19 @@ function closeSubtaskEdit() {
   currentSubtaskIndex = null;
 }
 
+function openAuthEditPopup() {
+  document.getElementById('openAuthEditOverlay').classList.add('show');
+  //document.getElementById('taskEditDesc').focus();
+}
+function closeAuthEdit(){
+  document.getElementById('openAuthEditOverlay').classList.remove('show');
+}
+function openBoardEdit(){
+  document.getElementById('boardEditOverlay').classList.add('show');
+}
+function closeBoardEdit(){
+  document.getElementById('boardEditOverlay').classList.remove('show');
+}
 
 // Toggle Function
 let allCollapsed = false;
@@ -733,7 +763,6 @@ function importData(e) {
 	}
     updateParentSelect();
     renderBoard();
-    saveBoard();
     updateCurrentFileDisplay();
   };
   reader.readAsText(file);
@@ -820,17 +849,19 @@ window.loadBoardFromFirebase = async function (boardId) {
     document.getElementById('boardTitle').textContent = data.title || boardId;
     updateParentSelect?.();
     renderBoard?.();
-    showNotification(`📥 Board '${boardId}' geladen`, "info");
+    showNotification(`Board '${data.title}' geladen`, "info");
+    currentBoard = boardId;
   } else {
-    showNotification(`⚠️ Board '${boardId}' nicht gefunden`, "warning");
+    showNotification(`Board '${data.title}' nicht gefunden`, "warning");
   }
 };
 
 
 // 🔼 Aktuelles Board speichern
-window.saveBoardToFirebase = async function (boardId) {
+window.saveBoardToFirebase = async function () {
   if (!currentUser) return;
-
+  const boardId = currentBoard;
+  console.log("Params passed to doc():", db, currentUser.uid, boardId);
   const ref = doc(db, "users", currentUser.uid, "boards", boardId);
   const data = {
     title: document.getElementById('boardTitle').textContent,
@@ -839,10 +870,10 @@ window.saveBoardToFirebase = async function (boardId) {
   };
 
   await setDoc(ref, data);
-  showNotification(`✅ Board '${boardId}' gespeichert`, "success");
+  showNotification(`Board '${boardId}' gespeichert`, "success");
 };
 
-window.listBoardsInFirebase = async function () {
+window.listBoardsInFirebase_del = async function () {
   if (!currentUser) return;
 
   const boardList = document.getElementById('boardList');
@@ -866,6 +897,31 @@ window.listBoardsInFirebase = async function () {
     boardList.appendChild(btn);
   });
 };
+document.getElementById("boardSelect").addEventListener("change", function () {
+  const selectedBoardId = this.value;
+  if (selectedBoardId) {
+    window.loadBoardFromFirebase(selectedBoardId);
+  }
+});
+
+window.listBoardsInFirebase = async function () {
+  const user = auth.currentUser;
+  if (!user) return;
+
+  const boardSelect = document.getElementById("boardSelect");
+  boardSelect.innerHTML = `<option value="" disabled selected>Bitte Board wählen</option>`; // leeren
+
+  const colRef = collection(db, "users", user.uid, "boards");
+  const querySnapshot = await getDocs(colRef);
+
+  querySnapshot.forEach((docSnap) => {
+    const option = document.createElement("option");
+    option.value = docSnap.id;
+    option.textContent = docSnap.data().title || docSnap.id;
+    boardSelect.appendChild(option);
+  });
+};
+
 
 window.loginWithEmail = async function () {
   const email = document.getElementById("loginEmail").value.trim();
@@ -873,12 +929,124 @@ window.loginWithEmail = async function () {
 
   try {
     await signInWithEmailAndPassword(auth, email, password);
-    showNotification("✅ Eingeloggt", "success");
+    showNotification("Eingeloggt", "success");
   } catch (err) {
-    showNotification("❌ Fehler beim Login", "error");
+    showNotification("Fehler beim Login", "error");
   }
 };
+window.registerWithEmail = async function () {
+  const email = document.getElementById("loginEmail").value.trim();
+  const password = document.getElementById("loginPassword").value.trim();
+
+  try {
+    await createUserWithEmailAndPassword(auth, email, password);
+    showNotification("Registrierung erfolgreich", "success");
+  } catch (error) {
+    showNotification("Registrierung fehlgeschlagen: " + error.message, "error");
+  }
+};
+
+window.logout = async function () {
+  try {
+    await signOut(auth);
+    showNotification("👋 Erfolgreich abgemeldet", "info");
+
+    // Optional: UI zurücksetzen
+    document.getElementById("boardTitle").textContent = "Sprint Board";
+    document.getElementById("boardList").innerHTML = "";
+    document.getElementById("boardIdInput").value = "";
+  } catch (error) {
+    console.error("Logout fehlgeschlagen:", error);
+    showNotification("Fehler beim Logout", "error");
+  }
+};
+
+window.createNewBoard = async function () {
+  const boardId = document.getElementById('boardIdInput').value.trim();
+
+  if (!boardId) {
+    showNotification("Bitte einen Boardnamen angeben", "warning");
+    return;
+  }
+
+  const user = auth.currentUser;
+  if (!user) {
+    showNotification("Kein Benutzer angemeldet", "error");
+    return;
+  }
+
+  try {
+    const ref = collection(db, "users", user.uid, "boards");
+    await addDoc(ref, {
+      title: boardId,
+      parents: {},
+      tasks: []
+    });
+    showNotification(`Board '${boardId}' wurde angelegt`, "success");
+
+    // Optional: direkt laden
+    document.getElementById('boardIdInput').value = boardId;
+    window.loadBoardFromFirebase(boardId);
+    await listBoardsInFirebase?.();
+  } catch (err) {
+    console.error("Fehler beim Erstellen:", err);
+    showNotification("Fehler beim Erstellen des Boards", "error");
+  }
+};
+
+
+onAuthStateChanged(auth, (user) => {
+  if (user) {
+    listBoardsInFirebase();
+  }
+});
+
 // 🔸 Board speichern
 // Optional: automatische Ladung beim Start
 window.loadBoardFromFirebase = loadBoardFromFirebase;
 window.saveBoardToFirebase = saveBoardToFirebase;
+
+window.toggleEditMode = toggleEditMode;
+window.toggleCollapseAll = toggleCollapseAll;
+window.loadBoard = loadBoard;
+window.saveBoard = saveBoard;
+window.exportData = exportData;
+window.importData = importData;
+window.openFile = openFile;
+window.saveNewFile = saveNewFile;
+window.saveExistingFile = saveExistingFile;
+window.showSaveMenu = showSaveMenu;
+window.hideSaveMenu = hideSaveMenu;
+window.updateCurrentFileDisplay = updateCurrentFileDisplay;
+window.showNotification = showNotification;
+window.openParentEditPopup = openParentEditPopup;
+window.closeParentEdit = closeParentEdit;
+window.saveParentEdit = saveParentEdit;
+window.deleteParent = deleteParent;
+window.openTaskEditPopup = openTaskEditPopup;
+window.closeTaskEdit = closeTaskEdit;
+window.saveTaskEdit = saveTaskEdit;
+window.openBoardTitlePopup = openBoardTitlePopup;
+window.saveBoardTitle = saveBoardTitle;
+window.closeTitleEdit = closeTitleEdit;
+window.openSubtaskEditPopup = openSubtaskEditPopup;
+window.saveSubtaskEdit = saveSubtaskEdit;
+window.closeSubtaskEdit = closeSubtaskEdit;
+window.deleteCurrent = deleteCurrent;
+window.toggleSubtaskDone = toggleSubtaskDone;
+window.addSubtask = addSubtask;
+window.editSubtask = editSubtask;
+window.addTaskToParent = addTaskToParent;
+window.addEmptyParentToColumn = addEmptyParentToColumn;
+window.updateParentSelect = updateParentSelect;
+window.hexToRgba = hexToRgba;
+window.isLightColor = isLightColor;
+window.listBoardsInFirebase = listBoardsInFirebase;
+window.createNewBoard = createNewBoard;
+window.loginWithEmail = loginWithEmail;
+window.registerWithEmail = registerWithEmail;
+window.logout = logout;
+window.openAuthEditPopup = openAuthEditPopup;
+window.closeAuthEdit = closeAuthEdit;
+window.openBoardEdit = openBoardEdit;
+window.closeBoardEdit = closeBoardEdit;

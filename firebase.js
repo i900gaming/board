@@ -4,6 +4,7 @@ import {
   getFirestore,
   collection,
   getDocs,
+  addDoc,
   doc,
   setDoc,
   getDoc
@@ -54,6 +55,8 @@ export {
   doc,
   setDoc,
   getDoc,
+  addDoc,
   collection,
-  getDocs
+  getDocs,
+  onAuthStateChanged,
 };

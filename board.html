@@ -11,40 +11,15 @@
 	
   <h1 id="boardTitle" onclick="openBoardTitlePopup()">Sprint Board</h1>
   <div><select id="parentSelect" style="display: none;"></select></div>
-  
+
   <div class="import-export-buttons">
   
-   <!-- Auth Bereich -->
-	<div class="auth-wrapper">
-		<h3>Login</h3>
-		<input type="email" id="loginEmail" placeholder="E-Mail">
-		<input type="password" id="loginPassword" placeholder="Passwort">
-		<button onclick="loginWithEmail()">Anmelden</button>
-		<button onclick="registerWithEmail()">Registrieren</button>
-		<button onclick="logout()">Abmelden</button>
-		<div id="authStatus">Nicht eingeloggt</div>
-	</div>
+	
 	<!-- Board Verwaltung -->
-	<div class="board-switcher">
-		<input type="text" id="boardIdInput" placeholder="Board-Name z. B. 'Sprint01'">
-		<button onclick="saveCurrentBoard()">📤 Save</button>
-		<button onclick="loadSelectedBoard()">📥 Load</button>
-		<button onclick="listBoardsInFirebase()">🔄 Liste</button>
-	</div>
-	<div class="board-list-wrapper">
-		<h3>📂 Gespeicherte Boards</h3>
-		<div id="boardList" class="board-list"></div>
-	</div>
-	
-	
-	<input type="text" id="boardIdInput" placeholder="Board-Name" />
-	<button onclick="saveBoardToFirebase(document.getElementById('boardIdInput').value)">Save</button>
-	<button onclick="loadBoardFromFirebase(document.getElementById('boardIdInput').value)">Load</button>
-	<button onclick="listBoardsInFirebase()">Liste anzeigen</button>
-	<div id="boardList"></div>
-	  
-	<button onclick="saveNewFile()">Save As New</button>
-	<button onclick="openFile()">Open</button>
+	<button onclick="openBoardEdit()">Board</button>
+	<button onclick="openAuthEditPopup()">Auth</button>
+	<button onclick="saveNewFile()">Export</button>
+	<button onclick="openFile()">Import</button>
     <button onclick="toggleEditMode()" id="editToggleButton">Edit</button>
     <button onclick="toggleCollapseAll()" id="collapseToggleButton">Collapse</button>
 	<div class="current-file-info">Aktuelle Datei: <span id="currentFileNameDisplay">–</span></div>
@@ -123,6 +98,49 @@
 			  <button onclick="closeSubtaskEdit()">Schließen</button>
 			</div>
 		  </div>
+		</div>
+		
+		<div id="openAuthEditOverlay" class="popup-overlay">
+			<div class="popup">
+			  <h2>Login</h2>
+			  <div class="popup-body">
+				<input type="email" id="loginEmail" placeholder="E-Mail">
+				<input type="password" id="loginPassword" placeholder="Passwort">
+			  </div>
+			  <div class="popup-buttons">
+				<button onclick="loginWithEmail()">Anmelden</button>
+				<button onclick="registerWithEmail()">Registrieren</button>
+				<button onclick="logout()">Abmelden</button>
+				<button onclick="closeAuthEdit()">Schließen</button>
+			  </div>
+			  <div id="authStatus">Nicht eingeloggt</div>
+			</div>
+		  </div>			
+		</div>
+
+		<div id="boardEditOverlay" class="popup-overlay">
+			<div class="popup">
+				<h2>Board</h2>
+				<div class="popup-body">
+					<select id="boardSelect"><option value="" disabled selected>Bitte Board wählen</option>	</select>
+					<label>Neues Board</label>
+					<input type="text" id="boardIdInput" placeholder="Neues Board z. B. 'SprintX'" />
+					<button onclick="createNewBoard()">Create</button>
+				</div>
+				<div class="popup-buttons">
+					<button onclick="loginWithEmail()">Anmelden</button>
+					<button onclick="registerWithEmail()">Registrieren</button>
+					<button onclick="logout()">Abmelden</button>
+					<button onclick="closeBoardEdit()">Schließen</button>
+					<button onclick="saveBoardToFirebase()" style="display: none;">📤 Save</button>
+					<button onclick="loadSelectedBoard()" style="display: none;">📥 Load</button>
+					<button onclick="listBoardsInFirebase()" style="display: none;">🔄 Liste</button>
+				  </div>
+					
+					
+					
+			</div>
+		  </div>			
 		</div>
 
 <div id="notification" class="notification-toast">Datei gespeichert.</div>
