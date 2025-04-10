@@ -18,10 +18,10 @@
 	<!-- Board Verwaltung -->
 	<button onclick="openBoardEdit()">Boards</button>
 	<button onclick="openAuthEditPopup()">Profil</button>
-	<button onclick="saveNewFile()">Export</button>
-	<button onclick="openFile()">Import</button>
     <button onclick="toggleEditMode()" id="editToggleButton">Edit</button>
     <button onclick="toggleCollapseAll()" id="collapseToggleButton">Collapse</button>
+	<button onclick="saveNewFile()">Export</button>
+	<button onclick="openFile()">Import</button>
 	<div class="current-file-info">Aktuelle Datei: <span id="currentFileNameDisplay">–</span></div>
   </div>
 
@@ -122,6 +122,9 @@
 			<div class="popup">
 				<h2>Board</h2>
 				<div class="popup-body">
+					<label>Titel bearbeiten</label>
+					<input type="text" id="boardTitleInput" style="display: none;">
+					<label>Board wechseln</label>
 					<select id="boardSelect"><option value="" disabled selected>Bitte Board wählen</option>	</select>
 					<label>Neues Board</label>
 					<input type="text" id="boardIdInput" placeholder="Neues Board z. B. 'SprintX'" />
@@ -131,14 +134,12 @@
 					<button onclick="loginWithEmail()">Anmelden</button>
 					<button onclick="registerWithEmail()">Registrieren</button>
 					<button onclick="logout()">Abmelden</button>
+					<button onclick="saveBoardTitle()">Speichern</button>
 					<button onclick="closeBoardEdit()">Schließen</button>
 					<button onclick="saveBoardToFirebase()" style="display: none;">📤 Save</button>
 					<button onclick="loadSelectedBoard()" style="display: none;">📥 Load</button>
 					<button onclick="listBoardsInFirebase()" style="display: none;">🔄 Liste</button>
 				  </div>
-					
-					
-					
 			</div>
 		  </div>			
 		</div>
