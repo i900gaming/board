@@ -1,4 +1,4 @@
-let version = '0.0.3';
+let version = '0.0.4';
 let parents = {};
 let tasks = [];
 let currentTask = null;
