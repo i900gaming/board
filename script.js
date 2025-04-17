@@ -627,7 +627,7 @@ window.openSubtaskEditPopup = function (task, subtaskIndex) {
 currentTask = task;
 currentSubtask = subtask;
 currentSubtaskIndex = subtaskIndex;
-
+log("currentSubtask:", currentSubtask);
   document.getElementById("subtaskEditDesc").value = subtask.desc || '';
   renderSubtaskAttributeEditor(subtask);
 	//document.getElementById("subtaskEditOverlay").style.display = 'flex';
@@ -963,7 +963,7 @@ window.loadBoardFromFirebase = async function (boardId) {
     document.getElementById('boardTitle').textContent = data.title || boardId;
     updateParentSelect?.();
     renderBoard?.();
-    showNotification(`Board '${data.title}' geladen (v.0.0.1`, "info");
+    showNotification(`Board '${data.title}' geladen (v.0.0.2)`, "info");
     currentBoard = boardId;
   } else {
     showNotification(`Board '${data.title}' nicht gefunden`, "warning");
