@@ -112,7 +112,7 @@ function addSubtask(task) {
   const desc = prompt("Subtask hinzufügen:");
   if (desc) {
     task.subtasks = task.subtasks || [];
-    task.subtasks.push({ desc, done: false });
+    task.subtasks.push({ desc, done: false, attributes: []  });
     renderBoard();
     saveBoardToFirebase();
   }
@@ -597,8 +597,11 @@ function closeTitleEdit() {
 
 //Task------------------------------------------------------------
 let currentSubtaskTask = null;
+let currentSubtask = null;
 let currentSubtaskIndex = null;
-function openSubtaskEditPopup(task, subtaskIndex) {
+let currentParentTask = null;
+
+function openSubtaskEditPopup_alt(task, subtaskIndex) {
   currentSubtaskTask = task;
   currentSubtaskIndex = subtaskIndex;
   const subtask = task.subtasks[subtaskIndex];
@@ -606,6 +609,53 @@ function openSubtaskEditPopup(task, subtaskIndex) {
   document.getElementById('subtaskEditOverlay').classList.add('show');
   document.getElementById('subtaskEditInput').focus();
 }
+
+window.openSubtaskEditPopup = function (task, subtask) {
+  currentSubtask = subtask;
+  currentParentTask = task;
+  document.getElementById("subtaskEditDesc").value = subtask.desc;
+  renderSubtaskAttributeEditor(subtask);
+  //document.getElementById("subtaskEditOverlay").style.display = 'flex';
+  document.getElementById('subtaskEditOverlay').classList.add('show');
+
+  // Fokus auf das Eingabefeld
+  setTimeout(() => {
+    document.getElementById("subtaskEditDesc").focus();
+  }, 50);
+};
+window.renderSubtaskAttributeEditor = function (subtask) {
+  const container = document.getElementById("subtaskAttributeList");
+  container.innerHTML = "";
+
+  (subtask.attributes || []).forEach((attr, i) => {
+    const wrapper = document.createElement('div');
+    wrapper.className = 'attribute-row';
+
+    wrapper.innerHTML = `
+      <input type="text" value="${attr.name}" placeholder="Name"
+        onchange="currentSubtask.attributes[${i}].name = this.value">
+      <select onchange="currentSubtask.attributes[${i}].type = this.value">
+        <option value="string" ${attr.type === 'string' ? 'selected' : ''}>Text</option>
+        <option value="number" ${attr.type === 'number' ? 'selected' : ''}>Zahl</option>
+      </select>
+      <input type="${attr.type}" value="${attr.value}"
+        onchange="currentSubtask.attributes[${i}].value = this.value">
+    `;
+    container.appendChild(wrapper);
+  });
+};
+window.addSubtaskAttribute = function () {
+  if (!currentSubtask.attributes) currentSubtask.attributes = [];
+  currentSubtask.attributes.push({ type: "string", name: "", value: "" });
+  renderSubtaskAttributeEditor(currentSubtask);
+};
+window.saveSubtaskEdit = function () {
+  currentSubtask.desc = document.getElementById("subtaskEditDesc").value;
+  saveBoard();
+  renderBoard();
+  closePopup();
+};
+
 function saveSubtaskEdit() {
   const newDesc = document.getElementById('subtaskEditInput').value.trim();
   if (newDesc && currentSubtaskTask && currentSubtaskIndex !== null) {

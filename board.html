@@ -92,6 +92,10 @@
 			<div class="popup-body">
 			  <label>Neuer Name</label>
 			  <input type="text" id="subtaskEditInput">
+			  <label>Beschreibung</label>
+				<input type="text" id="subtaskEditDesc">
+				<div id="subtaskAttributeList"></div>
+				<button onclick="addSubtaskAttribute()">Attribut hinzufügen</button>
 			</div>
 			<div class="popup-buttons">
 			  <button onclick="saveSubtaskEdit()">Speichern</button>
@@ -100,6 +104,24 @@
 		  </div>
 		</div>
 		
+		<!-- Subtask bearbeiten -->
+	<div id="subtaskEditOverlay" class="popup-overlay" style="display: none;">
+	  <div class="popup">
+		<h2>Subtask bearbeiten</h2>
+		<div class="popup-body">
+		  <label>Subtask umbenennen</label>
+		  <input type="text" id="subtaskEditDesc">
+		  
+		  <div id="subtaskAttributeList"></div>
+		  <button onclick="addSubtaskAttribute()">Attribut hinzufügen</button>
+		</div>
+		<div class="popup-buttons">
+		  <button onclick="saveSubtaskEdit()">Speichern</button>
+		  <button onclick="closeSubtaskEdit()">Schließen</button>
+		</div>
+	  </div>
+	</div>
+
 		<div id="openAuthEditOverlay" class="popup-overlay">
 			<div class="popup">
 			  <h2>Login</h2>
