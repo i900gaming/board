@@ -1,3 +1,4 @@
+let version = '0.0.3';
 let parents = {};
 let tasks = [];
 let currentTask = null;
@@ -6,7 +7,6 @@ let fileHandle = null;
 let currentFileName = null;
 let currentParentName = null;
 let currentBoard = null;
-
 let currentSubtaskTask = null;
 let currentSubtask = null;
 let currentSubtaskIndex = null;
@@ -663,28 +663,26 @@ window.addSubtaskAttribute = function () {
 window.saveSubtaskEdit = function () {
 	log("saveSubtaskEdit:", "start");
 	log("currentSubtask:", currentSubtask);
-  const desc = document.getElementById("subtaskEditDesc").value.trim();
-  const rows = document.querySelectorAll("#subtaskAttributeList .attribute-row");
-  const attributes = [];
-  rows.forEach(row => {
-    const name = row.querySelector(".attr-name")?.value.trim();
-    const type = row.querySelector(".attr-type")?.value;
-    let valueRaw = row.querySelector(".attr-value")?.value;
+	const desc = document.getElementById("subtaskEditDesc").value.trim();
+	const rows = document.querySelectorAll("#subtaskAttributeList .attribute-row");
+	const attributes = [];
+	rows.forEach(row => {
+		const name = row.querySelector(".attr-name")?.value.trim();
+		const type = row.querySelector(".attr-type")?.value;
+		let valueRaw = row.querySelector(".attr-value")?.value;
 
-    let value = (type === "number") ? Number(valueRaw) : valueRaw;
-    if (type === "number" && isNaN(value)) value = 0;
+		let value = (type === "number") ? Number(valueRaw) : valueRaw;
+		if (type === "number" && isNaN(value)) value = 0;
+		if (name) {
+			attributes.push({ name, type, value });
+		}
+	});
 
-    if (name) {
-      attributes.push({ name, type, value });
-    }
-  });
-
-  currentSubtask.desc = desc;
-  currentSubtask.attributes = attributes;
-
-  saveBoard();
-  renderBoard();
-  closeSubtaskEdit();
+	currentSubtask.desc = desc;
+	currentSubtask.attributes = attributes;
+	saveBoardToFirebase();
+	renderBoard();
+	closeSubtaskEdit();
 };
 
 window.saveSubtaskEdit_alt3 = function () {
@@ -963,7 +961,7 @@ window.loadBoardFromFirebase = async function (boardId) {
     document.getElementById('boardTitle').textContent = data.title || boardId;
     updateParentSelect?.();
     renderBoard?.();
-    showNotification(`Board '${data.title}' geladen (v.0.0.2)`, "info");
+    showNotification(`Board '${data.title}' geladen (v:${version})`, "info");
     currentBoard = boardId;
   } else {
     showNotification(`Board '${data.title}' nicht gefunden`, "warning");
