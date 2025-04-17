@@ -1,4 +1,4 @@
-let version = '0.0.5';
+let version = '0.0.7';
 let parents = {};
 let tasks = [];
 let currentTask = null;
@@ -598,6 +598,7 @@ function closeTitleEdit() {
   document.getElementById('titleEditOverlay').classList.remove('show');
 }
 
+
 //Task------------------------------------------------------------
 
 
@@ -1193,6 +1194,12 @@ function renderSummaryTable() {
   container.appendChild(totalLine);
 }
 
+function openSummaryPopup(){
+	document.getElementById('summaryOverlay').classList.add('show');
+}
+function closeSummaryPopup(){
+	document.getElementById('summaryOverlay').classList.add('show');
+}
 function normalize(str) {
   return (str || "").toLowerCase().replace(/\s+/g, "");
 }
@@ -1207,6 +1214,8 @@ onAuthStateChanged(auth, (user) => {
 // Optional: automatische Ladung beim Start
 window.renderSummaryTable = renderSummaryTable;
 window.normalize = normalize;
+window.openSummaryPopup = openSummaryPopup;
+window.closeSummaryPopup = closeSummaryPopup;
 
 window.loadBoardFromFirebase = loadBoardFromFirebase;
 window.saveBoardToFirebase = saveBoardToFirebase;
