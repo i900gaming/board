@@ -84,7 +84,7 @@ function loadBoard() {
 }
 
 function hexToRgba(hex, alpha = 1) {
-	log("hexToRgba:", hex);
+	//log("hexToRgba:", hex);
 	const r = parseInt(hex.slice(1, 3), 16);
 	const g = parseInt(hex.slice(3, 5), 16);
 	const b = parseInt(hex.slice(5, 7), 16);
@@ -398,7 +398,7 @@ function renderBoard() {
 
       wrapper.appendChild(taskList);
       col.appendChild(wrapper);
-	  wrapper.style.backgroundColor = hexToRgba(parents[parent]?.color, 0.2);
+	  wrapper.style.backgroundColor = g(parents[parent]?.color, 0.2);
 		wrapper.style.borderColor = parents[parent]?.color;
     })
 
@@ -684,7 +684,7 @@ window.saveSubtaskEdit = function () {
 
   saveBoard();
   renderBoard();
-  closePopup();
+  closeSubtaskEdit();
 };
 
 window.saveSubtaskEdit_alt3 = function () {
@@ -778,7 +778,7 @@ function toggleCollapseAll() {
 }
 
 function isLightColor(hex) {
-	log("isLightColor:", hex);
+	//log("isLightColor:", hex);
 	  const r = parseInt(hex.substr(1,2), 16);
 	  const g = parseInt(hex.substr(3,2), 16);
 	  const b = parseInt(hex.substr(5,2), 16);
@@ -963,7 +963,7 @@ window.loadBoardFromFirebase = async function (boardId) {
     document.getElementById('boardTitle').textContent = data.title || boardId;
     updateParentSelect?.();
     renderBoard?.();
-    showNotification(`Board '${data.title}' geladen`, "info");
+    showNotification(`Board '${data.title}' geladen (v.0.0.1`, "info");
     currentBoard = boardId;
   } else {
     showNotification(`Board '${data.title}' nicht gefunden`, "warning");
