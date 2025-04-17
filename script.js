@@ -645,15 +645,13 @@ window.renderSubtaskAttributeEditor = function (subtask) {
     const wrapper = document.createElement('div');
     wrapper.className = 'attribute-row';
     wrapper.innerHTML = `
-      <input type="text" value="${attr.name}" placeholder="Name"
-        onchange="currentSubtask.attributes[${i}].name = this.value">
-      <select onchange="currentSubtask.attributes[${i}].type = this.value">
-        <option value="string" ${attr.type === 'string' ? 'selected' : ''}>Text</option>
-        <option value="number" ${attr.type === 'number' ? 'selected' : ''}>Zahl</option>
-      </select>
-      <input type="${attr.type}" value="${attr.value}"
-        onchange="currentSubtask.attributes[${i}].value = this.value">
-    `;
+	  <input type="text" class="attr-name" value="${attr.name}" placeholder="Name">
+	  <select class="attr-type">
+		<option value="string" ${attr.type === 'string' ? 'selected' : ''}>Text</option>
+		<option value="number" ${attr.type === 'number' ? 'selected' : ''}>Zahl</option>
+	  </select>
+	  <input type="${attr.type}" class="attr-value" value="${attr.value}">
+`;
     container.appendChild(wrapper);
   });
 };
@@ -662,8 +660,34 @@ window.addSubtaskAttribute = function () {
   currentSubtask.attributes.push({ type: "string", name: "", value: "" });
   renderSubtaskAttributeEditor(currentSubtask);
 };
-
 window.saveSubtaskEdit = function () {
+	log("saveSubtaskEdit:", "start");
+	log("currentSubtask:", currentSubtask);
+  const desc = document.getElementById("subtaskEditDesc").value.trim();
+  const rows = document.querySelectorAll("#subtaskAttributeList .attribute-row");
+  const attributes = [];
+  rows.forEach(row => {
+    const name = row.querySelector(".attr-name")?.value.trim();
+    const type = row.querySelector(".attr-type")?.value;
+    let valueRaw = row.querySelector(".attr-value")?.value;
+
+    let value = (type === "number") ? Number(valueRaw) : valueRaw;
+    if (type === "number" && isNaN(value)) value = 0;
+
+    if (name) {
+      attributes.push({ name, type, value });
+    }
+  });
+
+  currentSubtask.desc = desc;
+  currentSubtask.attributes = attributes;
+
+  saveBoard();
+  renderBoard();
+  closePopup();
+};
+
+window.saveSubtaskEdit_alt3 = function () {
 	log("saveSubtaskEdit:", "start");
 	log("currentSubtask:", currentSubtask);
   const desc = document.getElementById("subtaskEditDesc").value.trim();
