@@ -22,6 +22,7 @@
     <button onclick="toggleCollapseAll()" id="collapseToggleButton">Collapse</button>
 	<button onclick="saveNewFile()">Export</button>
 	<button onclick="openFile()">Import</button>
+	<button onclick="openSummaryPopup()">Abrechnung</button>
 	<div class="current-file-info">Aktuelle Datei: <span id="currentFileNameDisplay">–</span></div>
   </div>
 
@@ -167,6 +168,24 @@
 			</div>
 		  </div>			
 		</div>
+		
+		<div id="summaryOverlay" class="popup-overlay" style="display: none;">
+		  <div class="popup">
+			<h2>Abrechnung</h2>
+			<div class="popup-body">
+			  <label for="summaryAttributeSelect">Attribut wählen:</label>
+			  <select id="summaryAttributeSelect" onchange="renderSummaryTable()">
+				<!-- Optionen werden dynamisch gefüllt -->
+			  </select>
+
+			  <div id="summaryTable" style="margin-top: 1rem;"></div>
+			</div>
+			<div class="popup-buttons">
+			  <button onclick="closeSummaryPopup()">Schließen</button>
+			</div>
+		  </div>
+		</div>
+
 
 <div id="notification" class="notification-toast">Datei gespeichert.</div>
 

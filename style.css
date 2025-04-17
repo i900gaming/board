@@ -633,3 +633,22 @@ body {
 .board-switcher button:hover {
   background-color: #555;
 }
+
+.summary-line {
+  display: flex;
+  justify-content: space-between;
+}
+
+.summary-subtotal {
+  font-weight: bold;
+  display: flex;
+  justify-content: space-between;
+  margin-top: 0.3rem;
+}
+
+.summary-total {
+  font-weight: bold;
+  display: flex;
+  justify-content: space-between;
+  margin-top: 1rem;
+}

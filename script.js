@@ -1,4 +1,4 @@
-let version = '0.0.4';
+let version = '0.0.5';
 let parents = {};
 let tasks = [];
 let currentTask = null;
@@ -1127,6 +1127,75 @@ function calcSum(attributeName) {
   return sum;
 }
 
+function renderSummaryTable() {
+  const attrName = document.getElementById("summaryAttributeSelect").value;
+  const container = document.getElementById("summaryTable");
+  container.innerHTML = "";
+
+  let total = 0;
+
+  // Gruppiere nach Parent
+  const groupedByParent = {};
+
+  tasks.forEach(task => {
+    (task.subtasks || []).forEach(sub => {
+      (sub.attributes || []).forEach(attr => {
+        if (
+		  normalize(attr.name) === normalize(attrName) &&
+		  !isNaN(parseFloat(attr.value))
+		) {
+          if (!groupedByParent[task.parent]) {
+            groupedByParent[task.parent] = [];
+          }
+          groupedByParent[task.parent].push({
+            taskDesc: task.desc,
+            subtaskDesc: sub.desc,
+            value: parseFloat(attr.value)
+          });
+        }
+      });
+    });
+  });
+
+  for (let parent in groupedByParent) {
+    const parentBlock = groupedByParent[parent];
+    let parentSum = 0;
+
+    const title = document.createElement("h4");
+    title.textContent = parent;
+    container.appendChild(title);
+
+    parentBlock.forEach(entry => {
+      const line = document.createElement("div");
+	  line.className = "summary-line";
+      line.innerHTML = `<span>${entry.taskDesc} → ${entry.subtaskDesc}</span><span>${entry.value.toFixed(2)}</span>`;
+      container.appendChild(line);
+      parentSum += entry.value;
+    });
+
+    const subtotal = document.createElement("div");
+    subtotal.className = "summary-subtotal";
+	line.className = "summary-line";
+    subtotal.style.justifyContent = "space-between";
+    subtotal.style.marginTop = "0.3rem";
+    subtotal.innerHTML = `<span>Summe für ${parent}:</span><span>${parentSum.toFixed(2)}</span>`;
+    container.appendChild(subtotal);
+
+    container.appendChild(document.createElement("hr"));
+    total += parentSum;
+  }
+
+  const totalLine = document.createElement("div");
+  totalLine.className = "summary-total";
+  totalLine.style.justifyContent = "space-between";
+  totalLine.style.marginTop = "1rem";
+  totalLine.innerHTML = `<span>Gesamtsumme:</span><span>${total.toFixed(2)}</span>`;
+  container.appendChild(totalLine);
+}
+
+function normalize(str) {
+  return (str || "").toLowerCase().replace(/\s+/g, "");
+}
 
 onAuthStateChanged(auth, (user) => {
   if (user) {
@@ -1136,6 +1205,9 @@ onAuthStateChanged(auth, (user) => {
 
 // 🔸 Board speichern
 // Optional: automatische Ladung beim Start
+window.renderSummaryTable = renderSummaryTable;
+window.normalize = normalize;
+
 window.loadBoardFromFirebase = loadBoardFromFirebase;
 window.saveBoardToFirebase = saveBoardToFirebase;
 
