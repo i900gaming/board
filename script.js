@@ -610,24 +610,34 @@ function openSubtaskEditPopup_alt(task, subtaskIndex) {
   document.getElementById('subtaskEditInput').focus();
 }
 
-window.openSubtaskEditPopup = function (taskIndex, subtaskIndex) {
-  currentTask = tasks[taskIndex];
-  currentSubtask = currentTask.subtasks[subtaskIndex];
-  currentSubtaskIndex = subtaskIndex;
-
-  if (!currentSubtask || typeof currentSubtask !== 'object') {
-    showNotification("❌ Ungültiger Subtask", "error");
+window.openSubtaskEditPopup = function (task, subtaskIndex) {
+  if (!task || typeof task !== 'object') {
+    console.error("Ungültiger Task:", task);
+    showNotification("Task nicht gefunden", "error");
     return;
   }
 
-  document.getElementById("subtaskEditDesc").value = currentSubtask.desc || '';
-  renderSubtaskAttributeEditor(currentSubtask);
-  document.getElementById("subtaskEditOverlay").style.display = 'flex';
+  const subtask = task.subtasks?.[subtaskIndex];
+  if (!subtask || typeof subtask !== 'object') {
+    console.error("Ungültiger Subtask-Index:", subtaskIndex);
+    showNotification("TSubtask nicht gefunden", "error");
+    return;
+  }
 
+  currentTask = task;
+  currentSubtask = subtask;
+  currentSubtaskIndex = subtaskIndex;
+
+  document.getElementById("subtaskEditDesc").value = subtask.desc || '';
+  renderSubtaskAttributeEditor(subtask);
+	//document.getElementById("subtaskEditOverlay").style.display = 'flex';
+	document.getElementById('subtaskEditOverlay').classList.add('show');
   setTimeout(() => {
     document.getElementById("subtaskEditDesc").focus();
   }, 50);
 };
+
+
 
 window.renderSubtaskAttributeEditor = function (subtask) {
   const container = document.getElementById("subtaskAttributeList");
