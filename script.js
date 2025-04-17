@@ -620,13 +620,13 @@ window.openSubtaskEditPopup = function (task, subtaskIndex) {
   const subtask = task.subtasks?.[subtaskIndex];
   if (!subtask || typeof subtask !== 'object') {
     console.error("Ungültiger Subtask-Index:", subtaskIndex);
-    showNotification("TSubtask nicht gefunden", "error");
+    showNotification("Subtask nicht gefunden", "error");
     return;
   }
 
-  currentTask = task;
-  currentSubtask = subtask;
-  currentSubtaskIndex = subtaskIndex;
+currentTask = task;
+currentSubtask = subtask;
+currentSubtaskIndex = subtaskIndex;
 
   document.getElementById("subtaskEditDesc").value = subtask.desc || '';
   renderSubtaskAttributeEditor(subtask);
@@ -637,8 +637,6 @@ window.openSubtaskEditPopup = function (task, subtaskIndex) {
   }, 50);
 };
 
-
-
 window.renderSubtaskAttributeEditor = function (subtask) {
   const container = document.getElementById("subtaskAttributeList");
   container.innerHTML = "";
@@ -646,7 +644,6 @@ window.renderSubtaskAttributeEditor = function (subtask) {
   (subtask.attributes || []).forEach((attr, i) => {
     const wrapper = document.createElement('div');
     wrapper.className = 'attribute-row';
-
     wrapper.innerHTML = `
       <input type="text" value="${attr.name}" placeholder="Name"
         onchange="currentSubtask.attributes[${i}].name = this.value">
@@ -665,14 +662,39 @@ window.addSubtaskAttribute = function () {
   currentSubtask.attributes.push({ type: "string", name: "", value: "" });
   renderSubtaskAttributeEditor(currentSubtask);
 };
+
 window.saveSubtaskEdit = function () {
+  const desc = document.getElementById("subtaskEditDesc").value.trim();
+  const attributeRows = document.querySelectorAll("#subtaskAttributeList .attribute-row");
+
+  const updatedAttributes = [];
+
+  attributeRows.forEach(row => {
+    const nameInput = row.querySelector('input[type="text"]:not([type="number"])');
+    const typeSelect = row.querySelector('select');
+    const valueInput = row.querySelector('input[type="text"], input[type="number"]');
+
+    const name = nameInput?.value?.trim();
+    const type = typeSelect?.value;
+    const value = type === 'number' ? Number(valueInput?.value) : valueInput?.value;
+    if (name) {
+      updatedAttributes.push({ name, type, value });
+    }
+  });
+  currentSubtask.desc = desc;
+  currentSubtask.attributes = updatedAttributes;
+
+  saveBoard();
+  renderBoard();
+  closePopup();
+};
+window.saveSubtaskEdit_alt2 = function () {
   currentSubtask.desc = document.getElementById("subtaskEditDesc").value;
   saveBoard();
   renderBoard();
   closePopup();
 };
-
-function saveSubtaskEdit() {
+function saveSubtaskEdit_alt() {
   const newDesc = document.getElementById('subtaskEditInput').value.trim();
   if (newDesc && currentSubtaskTask && currentSubtaskIndex !== null) {
     currentSubtaskTask.subtasks[currentSubtaskIndex].desc = newDesc;
