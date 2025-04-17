@@ -1,4 +1,4 @@
-let version = '0.0.8';
+let version = '0.0.9';
 let parents = {};
 let tasks = [];
 let currentTask = null;
@@ -1176,7 +1176,6 @@ function renderSummaryTable() {
 
     const subtotal = document.createElement("div");
     subtotal.className = "summary-subtotal";
-	line.className = "summary-line";
     subtotal.style.justifyContent = "space-between";
     subtotal.style.marginTop = "0.3rem";
     subtotal.innerHTML = `<span>Summe für ${parent}:</span><span>${parentSum.toFixed(2)}</span>`;
@@ -1221,11 +1220,11 @@ function openSummaryPopup() {
   });
 
   document.getElementById('summaryOverlay').classList.add('show');
-  //renderSummaryTable();
+  renderSummaryTable();
 }
 
 function closeSummaryPopup(){
-	document.getElementById('summaryOverlay').classList.add('show');
+	document.getElementById('summaryOverlay').classList.remove('show');
 }
 function normalize(str) {
   return (str || "").toLowerCase().replace(/\s+/g, "");
