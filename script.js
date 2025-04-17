@@ -396,9 +396,9 @@ function renderBoard() {
         taskList.appendChild(div);
       });
 
-      wrapper.appendChild(taskList);
-      col.appendChild(wrapper);
-	  wrapper.style.backgroundColor = g(parents[parent]?.color, 0.2);
+		wrapper.appendChild(taskList);
+		col.appendChild(wrapper);
+		wrapper.style.backgroundColor = hexToRgba(parents[parent]?.color, 0.2);
 		wrapper.style.borderColor = parents[parent]?.color;
     })
 
