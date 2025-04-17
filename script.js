@@ -610,19 +610,25 @@ function openSubtaskEditPopup_alt(task, subtaskIndex) {
   document.getElementById('subtaskEditInput').focus();
 }
 
-window.openSubtaskEditPopup = function (task, subtask) {
-  currentSubtask = subtask;
-  currentParentTask = task;
-  document.getElementById("subtaskEditDesc").value = subtask.desc;
-  renderSubtaskAttributeEditor(subtask);
-  //document.getElementById("subtaskEditOverlay").style.display = 'flex';
-  document.getElementById('subtaskEditOverlay').classList.add('show');
+window.openSubtaskEditPopup = function (taskIndex, subtaskIndex) {
+  currentTask = tasks[taskIndex];
+  currentSubtask = currentTask.subtasks[subtaskIndex];
+  currentSubtaskIndex = subtaskIndex;
 
-  // Fokus auf das Eingabefeld
+  if (!currentSubtask || typeof currentSubtask !== 'object') {
+    showNotification("❌ Ungültiger Subtask", "error");
+    return;
+  }
+
+  document.getElementById("subtaskEditDesc").value = currentSubtask.desc || '';
+  renderSubtaskAttributeEditor(currentSubtask);
+  document.getElementById("subtaskEditOverlay").style.display = 'flex';
+
   setTimeout(() => {
     document.getElementById("subtaskEditDesc").focus();
   }, 50);
 };
+
 window.renderSubtaskAttributeEditor = function (subtask) {
   const container = document.getElementById("subtaskAttributeList");
   container.innerHTML = "";
