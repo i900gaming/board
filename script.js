@@ -1,4 +1,4 @@
-let version = '0.0.7';
+let version = '0.0.8';
 let parents = {};
 let tasks = [];
 let currentTask = null;
@@ -1194,9 +1194,36 @@ function renderSummaryTable() {
   container.appendChild(totalLine);
 }
 
-function openSummaryPopup(){
-	document.getElementById('summaryOverlay').classList.add('show');
+function openSummaryPopup() {
+  const select = document.getElementById("summaryAttributeSelect");
+  select.innerHTML = "";
+
+  const attributeNames = new Set();
+
+  tasks.forEach(task =>
+    (task.subtasks || []).forEach(sub =>
+      (sub.attributes || []).forEach(attr => {
+        if (attr.type === "number") attributeNames.add(normalize(attr.name));
+      })
+    )
+  );
+
+  if (attributeNames.size === 0) {
+    showNotification("Keine numerischen Attribute gefunden", "warning");
+    return;
+  }
+
+  [...attributeNames].forEach(name => {
+    const option = document.createElement("option");
+    option.value = name;
+    option.textContent = name;
+    select.appendChild(option);
+  });
+
+  document.getElementById('summaryOverlay').classList.add('show');
+  //renderSummaryTable();
 }
+
 function closeSummaryPopup(){
 	document.getElementById('summaryOverlay').classList.add('show');
 }
