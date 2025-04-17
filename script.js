@@ -646,10 +646,13 @@ window.renderSubtaskAttributeEditor = function (subtask) {
     wrapper.className = 'attribute-row';
     wrapper.innerHTML = `
 	  <input type="text" class="attr-name" value="${attr.name}" placeholder="Name">
-	  <select class="attr-type">
-		<option value="string" ${attr.type === 'string' ? 'selected' : ''}>Text</option>
-		<option value="number" ${attr.type === 'number' ? 'selected' : ''}>Zahl</option>
-	  </select>
+		<select class="attr-type">
+		  <option value="string" ${attr.type === 'string' ? 'selected' : ''}>Text</option>
+		  <option value="number" ${attr.type === 'number' ? 'selected' : ''}>Zahl</option>
+		  <option value="boolean" ${attr.type === 'boolean' ? 'selected' : ''}>Checkbox</option>
+		  <option value="date" ${attr.type === 'date' ? 'selected' : ''}>Datum</option>
+		  <option value="url" ${attr.type === 'url' ? 'selected' : ''}>Link</option>
+		</select>
 	  <input type="${attr.type}" class="attr-value" value="${attr.value}">
 `;
     container.appendChild(wrapper);
@@ -1106,6 +1109,24 @@ window.createNewBoard = async function () {
   }
 };
 
+function calcSum(attributeName) {
+  let sum = 0;
+
+  tasks.forEach(task => {
+    (task.subtasks || []).forEach(subtask => {
+      (subtask.attributes || []).forEach(attr => {
+        if (
+          attr.name === attributeName &&
+          (attr.type === 'number' || !isNaN(parseFloat(attr.value)))
+        ) {
+          sum += parseFloat(attr.value);
+        }
+      });
+    });
+  });
+  return sum;
+}
+
 
 onAuthStateChanged(auth, (user) => {
   if (user) {
@@ -1162,3 +1183,4 @@ window.openAuthEditPopup = openAuthEditPopup;
 window.closeAuthEdit = closeAuthEdit;
 window.openBoardEdit = openBoardEdit;
 window.closeBoardEdit = closeBoardEdit;
+window.calcSum = calcSum;
