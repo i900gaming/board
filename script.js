@@ -6,6 +6,11 @@ let fileHandle = null;
 let currentFileName = null;
 let currentParentName = null;
 let currentBoard = null;
+
+let currentSubtaskTask = null;
+let currentSubtask = null;
+let currentSubtaskIndex = null;
+let currentParentTask = null;
 // script.js
 import {
   auth,
@@ -501,9 +506,7 @@ function saveParentEditasd() {
 function saveParentEdit() { 
   const newName = document.getElementById('parentEditName').value.trim();
   const newColor = document.getElementById('parentEditColor').value;
-  log("newName:", newName);
-  log("newColor:", newColor);
-  log("newColor:", currentParentName);
+  log("saveParentEdit:", "start");
   if (!newName || !currentParentName) return;
   if (newName !== currentParentName) {
     if (parents[newName]) {
@@ -596,10 +599,7 @@ function closeTitleEdit() {
 }
 
 //Task------------------------------------------------------------
-let currentSubtaskTask = null;
-let currentSubtask = null;
-let currentSubtaskIndex = null;
-let currentParentTask = null;
+
 
 function openSubtaskEditPopup_alt(task, subtaskIndex) {
   currentSubtaskTask = task;
@@ -664,6 +664,8 @@ window.addSubtaskAttribute = function () {
 };
 
 window.saveSubtaskEdit = function () {
+	log("saveSubtaskEdit:", "start");
+	log("currentSubtask:", currentSubtask);
   const desc = document.getElementById("subtaskEditDesc").value.trim();
   const attributeRows = document.querySelectorAll("#subtaskAttributeList .attribute-row");
 
